@@ -6,8 +6,12 @@ const printButton = document.getElementById('printButton');
 const statusButton = document.getElementById('statusButton');
 
 document.getElementById('connectButton').addEventListener('click', async () => {
+    if (port && port.readable) {
+        alert("프린터가 이미 연결되어 있습니다.");
+        return;
+    }
+
     try {
-        // 사용 가능한 시리얼 포트 요청
         port = await navigator.serial.requestPort();
         await port.open({
             baudRate: 19200, // Baud Rate 설정
@@ -26,6 +30,18 @@ document.getElementById('connectButton').addEventListener('click', async () => {
         updateUI();
     }
 });
+
+// 포트 닫기 함수 추가 (필요 시 호출 가능)
+async function closePort() {
+    if (port && port.readable) {
+        await port.close();
+        port = null;
+        printerStatus = "Disconnected";
+        updateUI();
+        console.log("포트가 닫혔습니다.");
+    }
+}
+
 
 document.getElementById('printButton').addEventListener('click', async () => {
     if (!port) {
@@ -52,6 +68,11 @@ document.getElementById('printButton').addEventListener('click', async () => {
         printerStatus = "Printing...";
         updateUI();
         console.log("프린터 명령어 전송 완료 (시리얼)");
+
+        // 프린트 작업 완료 후 상태를 다시 Connected로 변경
+        printerStatus = "Connected";
+        updateUI();
+        
         writer.releaseLock();
     } catch (error) {
         console.error("프린터 명령어 전송 실패:", error);
@@ -59,6 +80,7 @@ document.getElementById('printButton').addEventListener('click', async () => {
         updateUI();
     }
 });
+
 
 document.getElementById('statusButton').addEventListener('click', async () => {
     if (!port) {
