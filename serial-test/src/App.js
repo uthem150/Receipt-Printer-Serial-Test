@@ -58,8 +58,9 @@ function App() {
       const setKoreanMode = new Uint8Array([0x1b, 0x40]);
       await writer.write(setKoreanMode);
 
-      // "안녕하세요!"를 KSC5601 인코딩
-      const koreanText = iconv.encode("안녕하세요!\n", "ksc5601");
+      // "안녕하세요!" cp949 인코딩
+      // const koreanText = iconv.encode("안녕하세요!\n", "ksc5601");
+      const koreanText = iconv.encode("안녕하세요!\n", "cp949");
       await writer.write(koreanText);
 
       // 용지 피드 명령 (ESC d 3: 3라인 피드)
