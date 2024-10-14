@@ -15,8 +15,16 @@ function App() {
     }
 
     try {
-      // 사용자에게 직렬 포트를 선택하도록 요청
-      const selectedPort = await navigator.serial.requestPort();
+      // 사용 가능한 포트 목록 가져오기
+      const ports = await navigator.serial.getPorts();
+
+      if (ports.length === 0) {
+        throw new Error("사용 가능한 포트가 없습니다.");
+      }
+
+      // 첫 번째 사용 가능한 포트 선택
+      const selectedPort = ports[0];
+
       // 직렬 포트 열기
       await selectedPort.open({
         baudRate: 19200, // 보드레이트 설정
