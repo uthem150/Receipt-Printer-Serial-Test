@@ -6,7 +6,6 @@ function App() {
   // 프린터 상태와 포트를 상태로 관리
   const [printerStatus, setPrinterStatus] = useState("Disconnected");
   const [port, setPort] = useState(null);
-  const [isPrinterReady, setIsPrinterReady] = useState(false); // 프린터 준비 상태 관리
 
   // 프린터 연결 함수
   const connectPrinter = async () => {
