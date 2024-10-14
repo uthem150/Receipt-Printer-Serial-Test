@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import iconv from "iconv-lite";
 import "./App.css";
+import template from "./template.json";
 
 function App() {
   // 프린터 상태와 포트를 상태로 관리
@@ -43,6 +44,42 @@ function App() {
       setPrinterStatus("Connection Failed");
     }
   };
+
+  const printTemplate = async () => {
+    if (!port) {
+      alert("프린터가 연결되지 않았습니다.");
+      return;
+    }
+
+    try {
+      const writer = port.writable.getWriter(); // 쓰기 위한 writer 객체 생성
+
+      // 한글 모드 설정 (ESC @)
+      const setKoreanMode = new Uint8Array([0x1b, 0x40]);
+      await writer.write(setKoreanMode);
+
+      // 템플릿을 CP949로 인코딩하여 전송
+      const encodedTemplate = iconv.encode(template.template, "cp949");
+      await writer.write(encodedTemplate);
+
+      setPrinterStatus("Printing...");
+      console.log("템플릿 전송 완료 (시리얼)");
+
+      // 용지 피드 명령 (ESC d 3: 3라인 피드)
+      const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
+      await writer.write(feedCommand);
+
+      // 용지 절단 명령 (GS V 1: 부분 절단)
+      const cutCommand = new Uint8Array([0x1d, 0x56, 0x01]);
+      await writer.write(cutCommand);
+
+      setPrinterStatus("Connected");
+      writer.releaseLock();
+    } catch (error) {
+      console.error("프린터 명령어 전송 실패:", error);
+      setPrinterStatus("Print Failed");
+    }
+  };  
 
   // 인쇄 테스트 함수
   const printTest = async () => {
@@ -151,6 +188,15 @@ function App() {
         // 프린터가 연결되지 않았으면 비활성화
       >
         프린터 상태 확인
+      </button>
+      <button
+        id="printButton"
+        onClick={printTemplate}
+        disabled={
+          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+        }
+      >
+        인쇄 템플릿
       </button>
       {/* 프린터 상태 표시 */}
       <div id="printerStatus">프린터 상태: {printerStatus}</div>
