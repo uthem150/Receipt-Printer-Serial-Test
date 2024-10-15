@@ -52,24 +52,44 @@ function App() {
     }
 
     try {
-      const writer = port.writable.getWriter(); // 쓰기 위한 writer 객체 생성
+      const writer = port.writable.getWriter();
 
       // 한글 모드 설정 (ESC @)
       const setKoreanMode = new Uint8Array([0x1b, 0x40]);
       await writer.write(setKoreanMode);
 
-      // 템플릿을 CP949로 인코딩하여 전송
-      const encodedTemplate = iconv.encode(template.template, "cp949");
-      await writer.write(encodedTemplate);
+      // 왼쪽 정렬 설정
+      const leftAlign = new Uint8Array([0x1b, 0x61, 0x00]);
+      await writer.write(leftAlign);
 
-      setPrinterStatus("Printing...");
-      console.log("템플릿 전송 완료 (시리얼)");
+      // 텍스트 출력 (왼쪽 정렬)
+      const textLeft = iconv.encode("왼쪽 정렬 텍스트\n", "cp949");
+      await writer.write(textLeft);
 
-      // 용지 피드 명령 (ESC d 3: 3라인 피드)
+      // 가운데 정렬 설정
+      const centerAlign = new Uint8Array([0x1b, 0x61, 0x01]);
+      await writer.write(centerAlign);
+
+      // 텍스트 출력 (가운데 정렬)
+      const textCenter = iconv.encode("가운데 정렬 텍스트\n", "cp949");
+      await writer.write(textCenter);
+
+      // 폰트 크기 두 배로 설정
+      const doubleSize = new Uint8Array([0x1d, 0x21, 0x11]);
+      await writer.write(doubleSize);
+
+      // 텍스트 출력 (크기 두 배)
+      const textDoubleSize = iconv.encode("두 배 크기 텍스트\n", "cp949");
+      await writer.write(textDoubleSize);
+
+      // 크기 원래대로 돌리기
+      const normalSize = new Uint8Array([0x1d, 0x21, 0x00]);
+      await writer.write(normalSize);
+
+      // 용지 피드 및 절단
       const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
       await writer.write(feedCommand);
 
-      // 용지 절단 명령 (GS V 1: 부분 절단)
       const cutCommand = new Uint8Array([0x1d, 0x56, 0x01]);
       await writer.write(cutCommand);
 
@@ -79,7 +99,7 @@ function App() {
       console.error("프린터 명령어 전송 실패:", error);
       setPrinterStatus("Print Failed");
     }
-  };  
+  };
 
   // 인쇄 테스트 함수
   const printTest = async () => {
