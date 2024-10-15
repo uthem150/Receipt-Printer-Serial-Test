@@ -24,47 +24,51 @@ export const createReceiptTemplate = (info) => {
   const itemsString = items
     .map(
       (item) =>
-        `${item.name.padEnd(20)} ${item.price
+        `${item.name.padEnd(20)}${item.price
+          .toLocaleString()
           .toString()
-          .padStart(10)} ${item.quantity.toString().padStart(10)} ${(
-          item.price * item.quantity
-        )
+          .padStart(10)}${item.quantity
+          .toLocaleString()
+          .toString()
+          .padStart(10)}${(item.price * item.quantity)
+          .toLocaleString()
           .toString()
           .padStart(10)}`
     )
     .join("\n");
 
   return `
-[ 영수증 ]
+  [ 영수증 ]
+	
+  
+  ${hotelName} / ${businessNumber} / ${businessName}
+  ${address}
+  ${phoneNumber} / ${receiptNumber}
+  ${dateTime}
+  -------------------------------------------------
+  상 품 명               단 가       수량        금  액
+  -------------------------------------------------
+  ${itemsString}
+  -------------------------------------------------
+  합 계  금 액:                             ${totalAmount.toLocaleString()}
+  
+  -------------------------------------------------
+  부가세 과세물품가액:  ${taxableAmount.toLocaleString()}
+  부가세:               ${tax.toLocaleString()}
+  -------------------------------------------------
+  *** 신용승인정보(고객용) ***
 
-${hotelName} / ${businessNumber} / ${businessName}
-${address}
-${phoneNumber} / ${receiptNumber}
-${dateTime}
-----------------------------------------------
-상 품 명               단 가       수량        금  액
-----------------------------------------------
-${itemsString}
-----------------------------------------------
-합 계  금 액:                             ${totalAmount}
-----------------------------------------------
-부가세 과세물품가액:  ${taxableAmount}
-부가세:               ${tax}
-----------------------------------------------
-*** 신용승인정보(고객용) ***
-카드종류 : ${cardType}
-카드번호 : ${cardNumber}
-할부개월 : ${installmentMonths}
-판매금액 : ${saleAmount}
-부가세 : ${tax}
-승인금액 : ${approvalAmount}
-승인번호: ${approvalNumber}
-승인일시 : ${approvalDateTime}
-가맹점 번호 : ${merchantNumber}
-----------------------------------------------
-`
-    .replace(/^\s+/gm, "") // 각 줄의 앞 공백 제거
-    .trim();
+  [카드종류] : ${cardType}
+  [카드번호] : ${cardNumber}
+  [할부개월] : ${installmentMonths}
+  [판매금액] : ${saleAmount.toLocaleString()}
+  [부가세] : ${tax.toLocaleString()}
+  [승인금액] : ${approvalAmount.toLocaleString()}
+  [승인번호] : ${approvalNumber}
+  [승인일시] : ${approvalDateTime}
+  [가맹점 번호] : ${merchantNumber}
+  -------------------------------------------------
+  `.trim();
 };
 
 // Example usage:
