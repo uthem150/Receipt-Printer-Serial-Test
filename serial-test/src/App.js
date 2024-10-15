@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import iconv from "iconv-lite";
 import "./App.css";
 import template from "./template.json";
+import { createReceiptTemplate } from "./function/printReceipt";
 
 function App() {
   // 프린터 상태와 포트를 상태로 관리
@@ -58,33 +59,32 @@ function App() {
       const setKoreanMode = new Uint8Array([0x1b, 0x40]);
       await writer.write(setKoreanMode);
 
-      // 왼쪽 정렬 설정
-      const leftAlign = new Uint8Array([0x1b, 0x61, 0x00]);
-      await writer.write(leftAlign);
+      const receiptInfo = {
+        hotelName: "그랜드 호텔",
+        businessNumber: "123-45-67890",
+        businessName: "그랜드 호텔 주식회사",
+        address: "서울특별시 강남구 테헤란로 123",
+        phoneNumber: "02-1234-5678",
+        receiptNumber: "R-20231015-001",
+        dateTime: "2023-10-15 14:30:00",
+        items: [
+          { name: "디럭스 룸", price: 200000, quantity: 1 },
+          { name: "조식 뷔페", price: 30000, quantity: 2 },
+        ],
+        totalAmount: 260000,
+        taxableAmount: 236364,
+        tax: 23636,
+        cardType: "신한카드",
+        cardNumber: "1234-5678-****-9012",
+        installmentMonths: "일시불",
+        saleAmount: 260000,
+        approvalAmount: 260000,
+        approvalNumber: "12345678",
+        approvalDateTime: "2023-10-15 14:35:23",
+        merchantNumber: "9876543210",
+      };
 
-      // 텍스트 출력 (왼쪽 정렬)
-      const textLeft = iconv.encode("왼쪽 정렬 텍스트\n", "cp949");
-      await writer.write(textLeft);
-
-      // 가운데 정렬 설정
-      const centerAlign = new Uint8Array([0x1b, 0x61, 0x01]);
-      await writer.write(centerAlign);
-
-      // 텍스트 출력 (가운데 정렬)
-      const textCenter = iconv.encode("가운데 정렬 텍스트\n", "cp949");
-      await writer.write(textCenter);
-
-      // 폰트 크기 두 배로 설정
-      const doubleSize = new Uint8Array([0x1d, 0x21, 0x11]);
-      await writer.write(doubleSize);
-
-      // 텍스트 출력 (크기 두 배)
-      const textDoubleSize = iconv.encode("두 배 크기 텍스트\n", "cp949");
-      await writer.write(textDoubleSize);
-
-      // 크기 원래대로 돌리기
-      const normalSize = new Uint8Array([0x1d, 0x21, 0x00]);
-      await writer.write(normalSize);
+      createReceiptTemplate(receiptInfo);
 
       // 용지 피드 및 절단
       const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
