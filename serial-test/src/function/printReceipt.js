@@ -99,7 +99,7 @@ export const createReceiptTemplate = async (info) => {
     // 합계 정보 출력
     await writeAndWait(
       iconv.encode(
-        `합 계  금 액:                             ${totalAmount.toLocaleString()}\n`,
+        ` 합 계  금 액${totalAmount.toLocaleString().padStart(36)}\n`,
         "cp949"
       )
     );
@@ -107,17 +107,21 @@ export const createReceiptTemplate = async (info) => {
     // 구분선 출력
     await writeAndWait(iconv.encode(divider, "cp949"));
 
+    // 세금 정보 출력
+    const taxText1 = `            부가세 과세물품가액${taxableAmount
+      .toLocaleString()
+      .padStart(18)}`;
+    const taxText2 = `            부       가      세${tax
+      .toLocaleString()
+      .padStart(18)}`;
+
+    // 전체 텍스트 구성
+    const finalText = `${taxText1}\n${taxText2}\n`; // 줄 앞 공백 제거
+    await writeAndWait(iconv.encode(finalText, "cp949"));
+
     // 가운데 정렬 설정 (ESC a 1)
     await writeAndWait(new Uint8Array([0x1b, 0x61, 0x01])); // Center align
-    // 세금 정보 출력
-    await writeAndWait(
-      iconv.encode(
-        `부가세 과세물품가액:  ${taxableAmount.toLocaleString()}
-        부가세:               ${tax.toLocaleString()}
-        `.replace(/^\s+/gm, ""), // 줄 앞 공백 제거
-        "cp949"
-      )
-    );
+
     // 구분선 출력
     await writeAndWait(iconv.encode(divider, "cp949"));
 
@@ -156,6 +160,5 @@ export const createReceiptTemplate = async (info) => {
       // writer 닫기
       writer.releaseLock();
     }
-    await selectedPort.close(); // 포트 닫기
   }
 };
