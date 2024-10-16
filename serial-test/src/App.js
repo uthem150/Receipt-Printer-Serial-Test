@@ -114,9 +114,9 @@ function App() {
     try {
       const writer = port.writable.getWriter(); // 쓰기 위한 writer 객체 생성
 
-      // 한글 모드 설정 (ESC @)
-      const setKoreanMode = new Uint8Array([0x1b, 0x40]);
-      await writer.write(setKoreanMode);
+      // 버퍼를 클리어하고 모든 파라메터를 초기화 (ESC @)
+      const resetCommand = new Uint8Array([0x1b, 0x40]);
+      await writer.write(resetCommand);
 
       // "안녕하세요!" cp949 인코딩
       // const koreanText = iconv.encode("안녕하세요!\n", "ksc5601");
@@ -171,7 +171,7 @@ function App() {
     }
   };
 
-  // 인쇄 테스트 함수
+  // 버퍼 테스트 함수
   const bufferTest = async () => {
     if (!port) {
       alert("프린터가 연결되지 않았습니다.");
@@ -181,9 +181,9 @@ function App() {
     try {
       const writer = port.writable.getWriter(); // 쓰기 위한 writer 객체 생성
 
-      // 한글 모드 설정 (ESC @)
-      const setKoreanMode = new Uint8Array([0x1b, 0x40]);
-      await writer.write(setKoreanMode);
+      // 버퍼를 클리어하고 모든 파라메터를 초기화 (ESC @)
+      const resetCommand = new Uint8Array([0x1b, 0x40]);
+      await writer.write(resetCommand);
 
       for (let i = 0; i < 10; i++) {
         // 가운데 정렬 설정 (ESC a 1)
