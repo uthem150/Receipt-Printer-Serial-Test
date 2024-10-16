@@ -142,6 +142,94 @@ function App() {
     }
   };
 
+  // 커팅 함수
+  const cuttingFunc = async () => {
+    if (!port) {
+      alert("프린터가 연결되지 않았습니다.");
+      return;
+    }
+
+    try {
+      const writer = port.writable.getWriter(); // 쓰기 위한 writer 객체 생성
+
+      // 용지 피드 명령 (ESC d 3: 3라인 피드)
+      const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
+      await writer.write(feedCommand);
+
+      // 용지 절단 명령 (GS V 1: 부분 절단)
+      const cutCommand = new Uint8Array([0x1d, 0x56, 0x01]);
+      await writer.write(cutCommand);
+
+      setPrinterStatus("Printing..."); // 인쇄 중 상태 업데이트
+      console.log("프린터 명령어 전송 완료 (시리얼)");
+
+      setPrinterStatus("Connected"); // 인쇄 후 상태를 다시 연결된 상태로 설정
+      writer.releaseLock(); // writer의 잠금을 해제
+    } catch (error) {
+      console.error("프린터 명령어 전송 실패:", error);
+      setPrinterStatus("Print Failed"); // 인쇄 실패 상태로 설정
+    }
+  };
+
+  // 인쇄 테스트 함수
+  const bufferTest = async () => {
+    if (!port) {
+      alert("프린터가 연결되지 않았습니다.");
+      return;
+    }
+
+    try {
+      const writer = port.writable.getWriter(); // 쓰기 위한 writer 객체 생성
+
+      // 한글 모드 설정 (ESC @)
+      const setKoreanMode = new Uint8Array([0x1b, 0x40]);
+      await writer.write(setKoreanMode);
+
+      for (let i = 0; i < 10; i++) {
+        // 가운데 정렬 설정 (ESC a 1)
+        const centerAlign = new Uint8Array([0x1b, 0x61, 0x01]);
+        await writer.write(centerAlign);
+
+        // 텍스트 출력 (가운데 정렬)
+        const centerText = iconv.encode("가운데\n", "cp949");
+        await writer.write(centerText);
+
+        // 왼쪽 정렬 설정 (ESC a 0)
+        const leftAlign = new Uint8Array([0x1b, 0x61, 0x00]);
+        await writer.write(leftAlign);
+
+        // 텍스트 출력 (왼쪽 정렬)
+        const leftText = iconv.encode("가운데\n", "cp949");
+        await writer.write(leftText);
+
+        // 오른쪽 정렬 설정 (ESC a 0)
+        const rightAlign = new Uint8Array([0x1b, 0x61, 0x02]);
+        await writer.write(rightAlign);
+
+        // 텍스트 출력 (왼쪽 정렬)
+        const rightText = iconv.encode("오른쪽\n", "cp949");
+        await writer.write(rightText);
+      }
+
+      // 용지 피드 명령 (ESC d 3: 3라인 피드)
+      const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
+      await writer.write(feedCommand);
+
+      // 용지 절단 명령 (GS V 1: 부분 절단)
+      const cutCommand = new Uint8Array([0x1d, 0x56, 0x01]);
+      await writer.write(cutCommand);
+
+      setPrinterStatus("Printing..."); // 인쇄 중 상태 업데이트
+      console.log("프린터 명령어 전송 완료 (시리얼)");
+
+      setPrinterStatus("Connected"); // 인쇄 후 상태를 다시 연결된 상태로 설정
+      writer.releaseLock(); // writer의 잠금을 해제
+    } catch (error) {
+      console.error("프린터 명령어 전송 실패:", error);
+      setPrinterStatus("Print Failed"); // 인쇄 실패 상태로 설정
+    }
+  };
+
   // 프린터 상태 확인 함수
   const checkPrinterStatus = async () => {
     if (!port) {
@@ -213,11 +301,29 @@ function App() {
         프린터 상태 확인
       </button>
       <button
-        id="printButton"
+        id="cuttingButton"
+        onClick={cuttingFunc}
+        disabled={
+          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+        }
+      >
+        커팅
+      </button>
+      <button
+        id="bufferTestButton"
+        onClick={bufferTest}
+        disabled={
+          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+        }
+      >
+        버퍼 테스트
+      </button>
+      <button
+        id="printTemplateButton"
         onClick={printTemplate}
-        // disabled={
-        //   printerStatus !== "Connected" && printerStatus !== "Printer Ready"
-        // }
+        disabled={
+          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+        }
       >
         인쇄 템플릿
       </button>

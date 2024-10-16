@@ -36,15 +36,6 @@ export const createReceiptTemplate = async (info) => {
   let writer; // writer 변수 선언
 
   try {
-    // 직렬 포트 열기
-    await selectedPort.open({
-      baudRate: 19200, // 보드레이트 설정
-      dataBits: 8, // 데이터 비트 설정
-      stopBits: 1, // 스톱 비트 설정
-      parity: "none", // 패리티 비트 설정
-      flowControl: "none", // 하드웨어 플로우 제어 설정
-    });
-
     writer = selectedPort.writable.getWriter(); // writer 변수에 값을 할당
 
     // 한글 모드 설정 (ESC @)
