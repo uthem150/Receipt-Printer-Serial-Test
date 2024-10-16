@@ -83,24 +83,15 @@ export const createReceiptTemplate = async (info) => {
         const itemName = item.name.padEnd(20); // 상품 이름 정렬
         const itemPrice = item.price.toLocaleString().padStart(10); // 가격 정렬
         const itemQuantity = item.quantity.toLocaleString().padStart(10); // 수량 정렬
-        const itemTotal = (item.price * item.quantity).toLocaleString().padStart(10); // 총액 정렬
+        const itemTotal = (item.price * item.quantity)
+          .toLocaleString()
+          .padStart(10); // 총액 정렬
 
         // 포맷팅된 상품 정보
         return `${itemName} ${itemPrice} ${itemQuantity} ${itemTotal}\n`;
       })
       .join("\n");
     await writeAndWait(iconv.encode(itemsText, "cp949"));
-
-    // // 상품 리스트 출력
-    // for (const item of items) {
-    //   const itemLine = `
-    //   ${item.name.padEnd(20)}
-    //   ${item.price.toLocaleString().padStart(10)}
-    //   ${item.quantity.toLocaleString().padStart(10)}
-    //   ${(item.price * item.quantity).toLocaleString().padStart(10)}
-    //   `.replace(/\n/g, ""); // 줄 바꿈 제거;
-    //   await writeAndWait(iconv.encode(itemLine, "cp949"));
-    // }
 
     // 구분선 출력
     await writeAndWait(iconv.encode(divider, "cp949"));
