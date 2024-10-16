@@ -46,18 +46,19 @@ function App() {
     }
   };
 
+  // 템플릿 출력
   const printTemplate = async () => {
-    if (!port) {
-      alert("프린터가 연결되지 않았습니다.");
-      return;
-    }
+    // if (!port) {
+    //   alert("프린터가 연결되지 않았습니다.");
+    //   return;
+    // }
 
     try {
-      const writer = port.writable.getWriter();
+      // const writer = port.writable.getWriter();
 
-      // 한글 모드 설정 (ESC @)
-      const setKoreanMode = new Uint8Array([0x1b, 0x40]);
-      await writer.write(setKoreanMode);
+      // // 한글 모드 설정 (ESC @)
+      // const setKoreanMode = new Uint8Array([0x1b, 0x40]);
+      // await writer.write(setKoreanMode);
 
       const receiptInfo = {
         hotelName: "그랜드 호텔",
@@ -84,17 +85,19 @@ function App() {
         merchantNumber: "9876543210",
       };
 
+      // createReceiptTemplate(receiptInfo);
+
+      // // 용지 피드 및 절단
+      // const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
+      // await writer.write(feedCommand);
+
+      // const cutCommand = new Uint8Array([0x1d, 0x56, 0x01]);
+      // await writer.write(cutCommand);
+
+      // setPrinterStatus("Connected");
+      // writer.releaseLock();
+
       createReceiptTemplate(receiptInfo);
-
-      // 용지 피드 및 절단
-      const feedCommand = new Uint8Array([0x1b, 0x64, 0x03]);
-      await writer.write(feedCommand);
-
-      const cutCommand = new Uint8Array([0x1d, 0x56, 0x01]);
-      await writer.write(cutCommand);
-
-      setPrinterStatus("Connected");
-      writer.releaseLock();
     } catch (error) {
       console.error("프린터 명령어 전송 실패:", error);
       setPrinterStatus("Print Failed");
@@ -212,9 +215,9 @@ function App() {
       <button
         id="printButton"
         onClick={printTemplate}
-        disabled={
-          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
-        }
+        // disabled={
+        //   printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+        // }
       >
         인쇄 템플릿
       </button>
