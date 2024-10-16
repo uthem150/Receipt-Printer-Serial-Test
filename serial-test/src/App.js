@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import iconv from "iconv-lite";
 import "./App.css";
-import template from "./template.json";
 import { createReceiptTemplate } from "./function/printReceipt";
 
 function App() {
