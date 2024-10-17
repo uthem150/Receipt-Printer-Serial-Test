@@ -20,16 +20,47 @@ export const checkPrinterStatus = async (port, setPrinterStatus) => {
     if (!done && value instanceof Uint8Array) {
       const status = value[0]; // 첫 번째 바이트를 상태로 사용
 
+      // 각 비트 확인
+      const outOfPaper = (status & 0b00000001) !== 0; // 0번 비트
+      const printerHeadUp = (status & 0b00000010) !== 0; // 1번 비트
+      const paperJam = (status & 0b00000100) !== 0; // 2번 비트
+      const paperNearEnd = (status & 0b00001000) !== 0; // 3번 비트
+      const printingOrFeeding = (status & 0b00010000) !== 0; // 4번 비트
+      const cutterError = (status & 0b00100000) !== 0; // 5번 비트
+      const paperInAuxSensor = (status & 0b10000000) !== 0; // 7번 비트
+
+      let statusMessage = [];
+
+      // 각 상태에 따라 메시지 추가
+      if (outOfPaper) {
+        statusMessage.push("용지 없음");
+      }
+      if (printerHeadUp) {
+        statusMessage.push("프린터 헤드 업");
+      }
+      if (paperJam) {
+        statusMessage.push("용지 잼 있음");
+      }
+      if (paperNearEnd) {
+        statusMessage.push("용지 Near End");
+      }
+      if (printingOrFeeding) {
+        statusMessage.push("프린트 또는 feeding 중");
+      }
+      if (cutterError) {
+        statusMessage.push("컷터 에러(잼) 있음");
+      }
+      if (paperInAuxSensor) {
+        statusMessage.push("보조 센서에 용지 있음");
+      }
+
       // 상태에 따라 프린터 상태 업데이트
       if (status === 0x00) {
-        setPrinterStatus("Printer Ready");
-      } else if (status === 0x01) {
-        setPrinterStatus("Out of Paper");
-      } else if (status === 0x02) {
-        setPrinterStatus("Cover Open");
-      } else {
-        setPrinterStatus("Unknown Error");
+        // setPrinterStatus("Printer Ready");
+        statusMessage.push("Printer Ready");
       }
+
+      setPrinterStatus(statusMessage.join(`\n`)); // 메시지를 문자열로 변환하여 설정
     } else {
       setPrinterStatus("No Response"); // 응답이 없을 경우
     }
