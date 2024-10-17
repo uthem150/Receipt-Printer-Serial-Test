@@ -2,48 +2,12 @@ import React, { useState } from "react";
 import iconv from "iconv-lite";
 import "./App.css";
 import { createReceiptTemplate } from "./function/printReceipt";
+import { connectPrinter } from "./function/connectPrinter";
 
 function App() {
   // 프린터 상태와 포트를 상태로 관리
   const [printerStatus, setPrinterStatus] = useState("Disconnected");
   const [port, setPort] = useState(null);
-
-  // 프린터 연결 함수
-  const connectPrinter = async () => {
-    if (port && port.readable) {
-      alert("프린터가 이미 연결되어 있습니다.");
-      return;
-    }
-
-    try {
-      // 사용 가능한 포트 목록 가져오기
-      const ports = await navigator.serial.getPorts();
-
-      if (ports.length === 0) {
-        throw new Error("사용 가능한 포트가 없습니다.");
-      }
-
-      // 첫 번째 사용 가능한 포트 선택
-      const selectedPort = ports[0];
-
-      // 직렬 포트 열기
-      await selectedPort.open({
-        baudRate: 19200, // 보드레이트 설정
-        dataBits: 8, // 데이터 비트 설정
-        stopBits: 1, // 스톱 비트 설정
-        parity: "none", // 패리티 비트 설정
-        flowControl: "none", // 하드웨어 플로우 제어 설정
-      });
-
-      // 선택한 포트를 상태에 저장하고 프린터 상태 업데이트
-      setPort(selectedPort);
-      setPrinterStatus("Connected");
-      console.log("프린터 연결 완료 (시리얼 통신)");
-    } catch (error) {
-      console.error("프린터 연결 실패:", error);
-      setPrinterStatus("Connection Failed");
-    }
-  };
 
   // 템플릿 출력
   const printTemplate = async () => {
@@ -240,7 +204,11 @@ function App() {
   return (
     <div className="App">
       <h1>시리얼 통신 프린터 테스트</h1>
-      <button id="connectButton" onClick={connectPrinter}>
+      <button
+        id="connectButton"
+        onClick={() => connectPrinter(setPort, setPrinterStatus)}
+        disabled={port && port.readable}
+      >
         프린터 연결
       </button>
       <button
