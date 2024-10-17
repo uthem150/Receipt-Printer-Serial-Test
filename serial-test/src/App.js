@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { createReceiptTemplate } from "./function/printReceipt";
 import { connectPrinter } from "./function/connectPrinter";
 import { printTest } from "./function/printerTest";
 import { cuttingFunc } from "./function/cuttingFunc";
 import { bufferTest } from "./function/bufferTest";
-import { checkPrinterStatus } from "./function/checkPrinterStatus";
+import { checkPrinterStatus } from "./function/checkPrinterStatus"; // 기존 상태 확인 함수
 
 function App() {
-  // 프린터 상태와 포트를 상태로 관리
   const [printerStatus, setPrinterStatus] = useState("Disconnected");
+  const [autoPrinterStatus, setAutoPrinterStatus] = useState("Disconnected");
+
   const [port, setPort] = useState(null);
 
-  // 템플릿 출력
+  // 프린터 상태 자동 확인 설정
+  useEffect(() => {
+    let interval;
+
+    // 상태 자동 응답을 활성화하고 상태 체크를 주기적으로 실행
+    const startStatusCheck = async () => {
+      if (port) {
+        try {
+          // 일정 시간 간격으로 상태 체크 (1초 간격)
+          interval = setInterval(() => {
+            checkPrinterStatus(port, setAutoPrinterStatus);
+          }, 1000);
+        } catch (error) {
+          console.error("상태 체크 자동 응답 설정 실패:", error);
+        }
+      }
+    };
+
+    // 프린터 상태를 자동으로 가져오기 시작
+    startStatusCheck();
+
+    // 컴포넌트 언마운트 시 상태 체크를 중지
+    return () => clearInterval(interval);
+  }, [port]); // port가 변경될 때마다 상태 체크 시작
+
   const printTemplate = async () => {
     try {
       const receiptInfo = {
@@ -63,7 +88,6 @@ function App() {
         disabled={
           printerStatus !== "Connected" && printerStatus !== "Printer Ready"
         }
-        // 프린터가 연결되지 않았으면 비활성화
       >
         인쇄 테스트
       </button>
@@ -73,7 +97,6 @@ function App() {
         disabled={
           printerStatus !== "Connected" && printerStatus !== "Printer Ready"
         }
-        // 프린터가 연결되지 않았으면 비활성화
       >
         프린터 상태 확인
       </button>
@@ -106,6 +129,9 @@ function App() {
       </button>
       {/* 프린터 상태 표시 */}
       <div id="printerStatus">프린터 상태: {printerStatus}</div>
+      <div id="autoPrinterStatus">
+        자동 프린터 상태확인: {autoPrinterStatus}
+      </div>
     </div>
   );
 }
