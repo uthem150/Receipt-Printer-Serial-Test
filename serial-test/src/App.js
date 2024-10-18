@@ -7,6 +7,7 @@ import { cuttingFunc } from "./function/cuttingFunc";
 import { bufferTest } from "./function/bufferTest";
 import { checkPrinterStatus } from "./function/checkPrinterStatus";
 import { printerLock } from "./Mutex/printerLock";
+import PrinterStatusDisplay from "./component/PrinterStatusDisplay";
 
 function App() {
   const [printerStatus, setPrinterStatus] = useState("Disconnected");
@@ -201,6 +202,11 @@ function App() {
         자동 프린터 상태확인: {autoPrinterStatus}
       </div>
       {isPrinting && <div>인쇄 중...</div>}
+      <div
+        style={{ display: "flex", justifyContent: "center", marginTop: "3rem  " }}
+      >
+        <PrinterStatusDisplay port={port} />
+      </div>
     </div>
   );
 }
