@@ -69,7 +69,7 @@ export const createReceiptTemplate = async (info) => {
     // 호텔 정보 출력
     const hotelInfo = `${hotelName} / ${businessNumber} / ${businessName}
     ${address}
-    ${phoneNumber} / ${receiptNumber}
+    ${phoneNumber} / ${receiptNumber} /
     ${dateTime}\n`.replace(/^\s+/gm, ""); // 각 줄의 앞 공백 제거
     await writeAndWait(iconv.encode(hotelInfo, "cp949"));
 
@@ -146,15 +146,21 @@ export const createReceiptTemplate = async (info) => {
     // 왼쪽 정렬
     await writeAndWait(new Uint8Array([0x1b, 0x61, 0x00])); // Left align
     // 세부 신용 승인 정보 출력
-    const approvalInfo = `[카드종류] : ${cardType}
-                          [카드번호] : ${cardNumber}
-                          [할부개월] : ${installmentMonths}
-                          [판매금액] : ${saleAmount.toLocaleString()}
-                          [부가세] : ${tax.toLocaleString()}
-                          [승인금액] : ${approvalAmount.toLocaleString()}
-                          [승인번호] : ${approvalNumber}
-                          [승인일시] : ${approvalDateTime}
-                          [가맹점 번호] : ${merchantNumber}
+    const approvalInfo = `카 드 종 류: ${cardType.padStart(
+      36 - getKorCount(cardType)
+    )}
+                          카 드 번 호: ${cardNumber}
+                          할 부 개 월: ${installmentMonths}
+                          판 매 금 액: ${saleAmount
+                            .toLocaleString()
+                            .padStart(36)}
+                          부  가  세 : ${tax.toLocaleString().padStart(36)}
+                          승 인 금 액: ${approvalAmount
+                            .toLocaleString()
+                            .padStart(36)}
+                          승 인 번 호: ${approvalNumber}
+                          승 인 일 시: ${approvalDateTime}
+                          가맹점 번호: ${merchantNumber}
                           `.replace(/^\s+/gm, ""); //문자열의 앞 공백 제거
     await writeAndWait(iconv.encode(approvalInfo, "cp949"));
 
