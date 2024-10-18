@@ -5,41 +5,55 @@ import { connectPrinter } from "./function/connectPrinter";
 import { printTest } from "./function/printerTest";
 import { cuttingFunc } from "./function/cuttingFunc";
 import { bufferTest } from "./function/bufferTest";
-import { checkPrinterStatus } from "./function/checkPrinterStatus"; // 기존 상태 확인 함수
+import { checkPrinterStatus } from "./function/checkPrinterStatus";
+import { printerLock } from "./Mutex/printerLock";
 
 function App() {
   const [printerStatus, setPrinterStatus] = useState("Disconnected");
   const [autoPrinterStatus, setAutoPrinterStatus] = useState("Disconnected");
-
   const [port, setPort] = useState(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+
+  // 안전한 프린터 상태 체크 함수
+  const safeCheckStatus = async (port, setStatus) => {
+    try {
+      await printerLock.acquire();
+      await checkPrinterStatus(port, setStatus);
+    } catch (error) {
+      console.error("프린터 상태 체크 실패:", error);
+    } finally {
+      printerLock.release();
+    }
+  };
 
   // 프린터 상태 자동 확인 설정
   useEffect(() => {
     let interval;
+    let isChecking = false; // 상태 체크 중복 방지 플래그
 
-    // 상태 자동 응답을 활성화하고 상태 체크를 주기적으로 실행
     const startStatusCheck = async () => {
       if (port) {
-        try {
-          // 일정 시간 간격으로 상태 체크 (1초 간격)
-          interval = setInterval(() => {
-            checkPrinterStatus(port, setAutoPrinterStatus);
-          }, 1000);
-        } catch (error) {
-          console.error("상태 체크 자동 응답 설정 실패:", error);
-        }
+        interval = setInterval(async () => {
+          if (!isChecking) {
+            isChecking = true;
+            await safeCheckStatus(port, setAutoPrinterStatus);
+            isChecking = false;
+          }
+        }, 1000);
       }
     };
 
-    // 프린터 상태를 자동으로 가져오기 시작
     startStatusCheck();
-
     // 컴포넌트 언마운트 시 상태 체크를 중지
     return () => clearInterval(interval);
   }, [port]); // port가 변경될 때마다 상태 체크 시작
 
+  // 안전한 프린터 템플릿 출력 함수
   const printTemplate = async () => {
     try {
+      await printerLock.acquire();
+      setIsPrinting(true);
+
       const receiptInfo = {
         hotelName: "그랜드 호텔",
         businessNumber: "123-45-67890",
@@ -65,11 +79,55 @@ function App() {
         merchantNumber: "9876543210",
       };
 
-      createReceiptTemplate(receiptInfo);
+      await createReceiptTemplate(receiptInfo);
     } catch (error) {
       console.error("프린터 명령어 전송 실패:", error);
       setPrinterStatus("Print Failed");
+    } finally {
+      setIsPrinting(false);
+      printerLock.release();
     }
+  };
+
+  // 안전한 프린트 테스트 함수
+  const handlePrintTest = async () => {
+    try {
+      await printerLock.acquire();
+      setIsPrinting(true);
+      await printTest(port, setPrinterStatus);
+    } finally {
+      setIsPrinting(false);
+      printerLock.release();
+    }
+  };
+
+  // 안전한 커팅 함수
+  const handleCutting = async () => {
+    try {
+      await printerLock.acquire();
+      setIsPrinting(true);
+      await cuttingFunc(port, setPrinterStatus);
+    } finally {
+      setIsPrinting(false);
+      printerLock.release();
+    }
+  };
+
+  // 안전한 버퍼 테스트 함수
+  const handleBufferTest = async () => {
+    try {
+      await printerLock.acquire();
+      setIsPrinting(true);
+      await bufferTest(port, setPrinterStatus);
+    } finally {
+      setIsPrinting(false);
+      printerLock.release();
+    }
+  };
+
+  // 안전한 상태 체크 핸들러
+  const handleStatusCheck = () => {
+    safeCheckStatus(port, setPrinterStatus);
   };
 
   return (
@@ -84,36 +142,44 @@ function App() {
       </button>
       <button
         id="printButton"
-        onClick={() => printTest(port, setPrinterStatus)}
+        onClick={handlePrintTest}
         disabled={
-          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+          (printerStatus !== "Connected" &&
+            printerStatus !== "Printer Ready") ||
+          isPrinting
         }
       >
         인쇄 테스트
       </button>
       <button
         id="statusButton"
-        onClick={() => checkPrinterStatus(port, setPrinterStatus)}
+        onClick={handleStatusCheck}
         disabled={
-          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+          (printerStatus !== "Connected" &&
+            printerStatus !== "Printer Ready") ||
+          isPrinting
         }
       >
         프린터 상태 확인
       </button>
       <button
         id="cuttingButton"
-        onClick={() => cuttingFunc(port, setPrinterStatus)}
+        onClick={handleCutting}
         disabled={
-          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+          (printerStatus !== "Connected" &&
+            printerStatus !== "Printer Ready") ||
+          isPrinting
         }
       >
         커팅
       </button>
       <button
         id="bufferTestButton"
-        onClick={() => bufferTest(port, setPrinterStatus)}
+        onClick={handleBufferTest}
         disabled={
-          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+          (printerStatus !== "Connected" &&
+            printerStatus !== "Printer Ready") ||
+          isPrinting
         }
       >
         버퍼 테스트
@@ -122,7 +188,9 @@ function App() {
         id="printTemplateButton"
         onClick={printTemplate}
         disabled={
-          printerStatus !== "Connected" && printerStatus !== "Printer Ready"
+          (printerStatus !== "Connected" &&
+            printerStatus !== "Printer Ready") ||
+          isPrinting
         }
       >
         인쇄 템플릿
@@ -132,6 +200,7 @@ function App() {
       <div id="autoPrinterStatus">
         자동 프린터 상태확인: {autoPrinterStatus}
       </div>
+      {isPrinting && <div>인쇄 중...</div>}
     </div>
   );
 }
