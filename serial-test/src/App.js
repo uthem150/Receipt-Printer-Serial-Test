@@ -80,6 +80,32 @@ function App() {
         merchantNumber: "9876543210",
       };
 
+      // const receiptInfo = {
+      //   hotelName: "그랜드 호텔", // 고정 값
+      //   businessNumber: "123-45-67890", // 고정 값
+      //   businessName: "그랜드 호텔 주식회사", // 고정 값
+      //   address: "서울특별시 강남구 테헤란로 123", // 고정 값
+      //   phoneNumber: "02-1234-5678", // 고정 값
+      //   receiptNumber: "R-20231015-001", // 고정 값, 필요에 따라 생성 규칙 조정 가능
+      //   dateTime: `${outReplyDate.slice(0, 4)}-${outReplyDate.slice(4, 6)}-${outReplyDate.slice(6)} ${outTradeReqTime.slice(0, 2)}:${outTradeReqTime.slice(2, 4)}:${outTradeReqTime.slice(4)}`,
+      //   items: [
+      //     // 필요에 따라 각 품목을 추가
+      //     { name: "디럭스 룸", price: 200000, quantity: 1 },
+      //     { name: "조식 뷔페", price: 30000, quantity: 2 },
+      //   ],
+      //   totalAmount: Number(outTranAmt), // 총 결제 금액
+      //   taxableAmount: 0, // 필요 시 계산 추가
+      //   tax: 0, // 필요 시 계산 추가
+      //   cardType: outIssuerName.trim(), // 카드 종류
+      //   cardNumber: outCardNo, // 카드 번호
+      //   installmentMonths: outInstallment === "00" ? "일시불" : `${outInstallment}개월`, // 할부 개월 수
+      //   saleAmount: Number(outTranAmt), // 판매 금액
+      //   approvalAmount: Number(outTranAmt), // 승인 금액
+      //   approvalNumber: outAuthNo, // 승인 번호
+      //   approvalDateTime: `${outReplyDate.slice(0, 4)}-${outReplyDate.slice(4, 6)}-${outReplyDate.slice(6)} ${outTradeReqTime.slice(0, 2)}:${outTradeReqTime.slice(2, 4)}:${outTradeReqTime.slice(4)}`,
+      //   merchantNumber: outMerchantRegNo.trim(), // 가맹점 번호
+      // };
+
       await createReceiptTemplate(receiptInfo);
     } catch (error) {
       console.error("프린터 명령어 전송 실패:", error);
@@ -203,7 +229,11 @@ function App() {
       </div>
       {isPrinting && <div>인쇄 중...</div>}
       <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "3rem  " }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: "3rem  ",
+        }}
       >
         <PrinterStatusDisplay port={port} />
       </div>
